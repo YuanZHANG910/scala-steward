@@ -22,7 +22,6 @@ import io.circe.generic.semiauto._
 import org.scalasteward.core.git.Branch
 import org.scalasteward.core.model.{SemVer, Update}
 import org.scalasteward.core.nurture.UpdateData
-import org.scalasteward.core.repoconfig.RepoConfigAlg
 import org.scalasteward.core.git
 
 final case class NewPullRequestData(
@@ -36,7 +35,7 @@ object NewPullRequestData {
   implicit val newPullRequestDataEncoder: Encoder[NewPullRequestData] =
     deriveEncoder
 
-  def bodyFor(update: Update, login: String): String = {
+  def bodyFor(update: Update): String = {
     val artifacts = update match {
       case s: Update.Single =>
         s" ${s.groupId}:${s.artifactId} "
@@ -46,21 +45,6 @@ object NewPullRequestData {
           .mkString_("\n", "", "\n")
     }
     s"""|Updates${artifacts}from ${update.currentVersion} to ${update.nextVersion}.
-        |
-        |I'll automatically update this PR to resolve conflicts as long as you don't change it yourself.
-        |
-        |If you'd like to skip this version, you can just close this PR. If you have any feedback, just mention @$login in the comments below.
-        |
-        |Have a fantastic day writing Scala!
-        |
-        |<details>
-        |<summary>Ignore future updates</summary>
-        |
-        |Add this to your `${RepoConfigAlg.repoConfigBasename}` file to ignore future updates of this dependency:
-        |```
-        |${RepoConfigAlg.configToIgnoreFurtherUpdates(update)}
-        |```
-        |</details>
         |
         |${semVerLabel(update).fold("")("labels: " + _)}
         |""".stripMargin.trim
@@ -73,10 +57,10 @@ object NewPullRequestData {
       change <- SemVer.getChange(curr, next)
     } yield s"semver-${change.render}"
 
-  def from(data: UpdateData, branchName: String, authorLogin: String): NewPullRequestData =
+  def from(data: UpdateData, branchName: String): NewPullRequestData =
     NewPullRequestData(
       title = git.commitMsgFor(data.update),
-      body = bodyFor(data.update, authorLogin),
+      body = bodyFor(data.update),
       head = branchName,
       base = data.baseBranch
     )

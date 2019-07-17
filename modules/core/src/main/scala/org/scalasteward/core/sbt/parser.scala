@@ -22,6 +22,8 @@ import org.scalasteward.core.model.{Dependency, Update}
 import org.scalasteward.core.sbt.data.SbtVersion
 import org.scalasteward.core.util.Nel
 
+case class VersionDetails(major: Option[String] = Some("0"), minor: String = "0", patch: String = "0")
+
 object parser {
   def parseBuildProperties(s: String): Option[SbtVersion] =
     """sbt.version\s*=\s*(.+)""".r.findFirstMatchIn(s).map(_.group(1)).map(SbtVersion.apply)
@@ -44,13 +46,32 @@ object parser {
           )
           newerVersionsList = versions
             .drop(1)
-            .filterNot(v => v.startsWith("InvalidVersion") || v === currentVersion)
+            //.dropRight(1) // drop the latest version (new)
+            .filterNot(v =>
+              v.startsWith("InvalidVersion")
+                ||
+              v === currentVersion
+                ||
+              v.contains("play-26") // Ignore any version with 'play-26' (new)
+                ||
+              versionSplit(v).major > versionSplit(currentVersion).major // Ignore major version update (new)
+            )
             .toList
           newerVersions <- Either.fromOption(Nel.fromList(newerVersionsList), msg("newerVersions"))
-        } yield Update.Single(groupId, artifactId, currentVersion, newerVersions, configurations)
+        } yield {
+          Update.Single(groupId, artifactId, currentVersion, newerVersions, configurations)
+        }
 
       case _ => Left(s"'$line' must contain ' : ' exactly once")
     }
+
+  def versionSplit(version: String): VersionDetails = {
+    version.split("\\.").toList match {
+      case l if l.length === 3 => VersionDetails(l.headOption, l(1), l(2))
+      case _ => VersionDetails()
+    }
+
+  }
 
   /** Parses the output of sbt-updates' `dependencyUpdates` task. */
   def parseSingleUpdates(lines: List[String]): List[Update.Single] =

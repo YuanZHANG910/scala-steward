@@ -123,7 +123,7 @@ final class NurtureAlg[F[_]](
     for {
       _ <- logger.info(s"Create PR ${data.updateBranch.name}")
       branchName = vcs.createBranch(config.vcsType, data.fork, data.update)
-      requestData = NewPullRequestData.from(data, branchName, config.vcsLogin)
+      requestData = NewPullRequestData.from(data, branchName)
       pr <- vcsApiAlg.createPullRequest(data.repo, requestData)
       _ <- pullRequestRepo.createOrUpdate(
         data.repo,
