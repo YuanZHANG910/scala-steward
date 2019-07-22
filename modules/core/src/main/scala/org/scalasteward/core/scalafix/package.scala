@@ -51,6 +51,14 @@ package object scalafix {
         Nel.of("cats-core".r),
         Version("1.0.0"),
         Nel.of("github:fthomas/cats/Cats_v1_0_0?sha=update/scalafix")
+      ),
+      Migration(
+        "com.github.tomakehurst",
+        Nel.of("wiremock".r),
+        Version("2.24.0"),
+        Nel.of(//"github:scalacenter/scalafix/scalafix-rules/src/main/scala/scalafix/internal/rule/RemoveUnused?sha=v0.9.5"
+          "https://raw.githubusercontent.com/hmrc/scalafix-rules/master/rules/src/main/scala/fix/RemoveMDCLoggingExecutionContext.scala?token=ACT3OYGM4IU4BES7GIT53RK5HMMIK"
+        )
       )
     )
 

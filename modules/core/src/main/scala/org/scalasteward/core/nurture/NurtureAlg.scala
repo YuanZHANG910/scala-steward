@@ -86,13 +86,13 @@ final class NurtureAlg[F[_]](
       head = vcs.listingBranch(config.vcsType, data.fork, data.update)
       pullRequests <- vcsApiAlg.listPullRequests(data.repo, head, data.baseBranch)
       _ <- pullRequests.headOption match {
-        case Some(pr) if pr.isClosed =>
-          logger.info(s"PR ${pr.html_url} is closed")
-        case Some(pr) if data.repoConfig.updatePullRequests =>
-          logger.info(s"Found PR ${pr.html_url}") >> updatePullRequest(data)
-        case Some(pr) =>
-          logger.info(s"Found PR ${pr.html_url}, but updates are disabled by flag")
-        case None =>
+//        case Some(pr) if pr.isClosed =>
+//          logger.info(s"PR ${pr.html_url} is closed")
+//        case Some(pr) if data.repoConfig.updatePullRequests =>
+//          logger.info(s"Found PR ${pr.html_url}") >> updatePullRequest(data)
+//        case Some(pr) =>
+//          logger.info(s"Found PR ${pr.html_url}, but updates are disabled by flag")
+        case _ =>
           applyNewUpdate(data)
       }
       _ <- pullRequests.headOption.fold(F.unit) { pr =>
